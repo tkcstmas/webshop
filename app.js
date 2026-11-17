@@ -4,6 +4,10 @@ const allapotElem = document.querySelector("#users-status");
 const felhasznalokTablaTorze = document.querySelector("#users-table-body");
 const ujFelhasznaloUrlap = document.querySelector("#new-user-form");
 const hozzaadasGomb = document.querySelector("#add-user-button");
+const szerkesztoSzekcio = document.querySelector("#edit-user-section");
+const szerkesztoUrlap = document.querySelector("#edit-user-form");
+const mentesGomb = document.querySelector("#save-user-changes-button");
+const megszakitasGomb = document.querySelector("#cancel-edit-button");
  
 function uzenetMegjelenitese(uzenet, tipus) {
     allapotElem.textContent = uzenet;
@@ -19,9 +23,67 @@ function sorBeszurasa(felhasznalo) {
         cella.textContent = ertek == null || ertek === "" ? "-" : String(ertek);
         sor.append(cella);
     });
+
+    const muveletCella = document.createElement("td");
+    const szerkesztesGomb = document.createElement("button");
+    szerkesztesGomb.type = "button";
+    szerkesztesGomb.className = "btn btn-outline-primary btn-sm";
+    szerkesztesGomb.textContent = "Szerkesztés";
+    szerkesztesGomb.disabled = felhasznalo.id == null;
+    szerkesztesGomb.title = felhasznalo.id == null ? "Azonosító nélkül nem szerkeszthető" : "Felhasználó szerkesztése";
+    szerkesztesGomb.addEventListener("click", () => szerkesztoMegnyitasa(felhasznalo));
+    muveletCella.append(szerkesztesGomb);
+    sor.append(muveletCella);
  
     felhasznalokTablaTorze.append(sor);
 }
+
+function szerkesztoMegnyitasa(felhasznalo) {
+    for (const mezo of ["id", "name", "email", "city", "phone", "role"]) {
+        szerkesztoUrlap.elements.namedItem(mezo).value = felhasznalo[mezo] ?? "";
+    }
+
+    szerkesztoSzekcio.hidden = false;
+    szerkesztoSzekcio.scrollIntoView({ behavior: "smooth", block: "start" });
+    szerkesztoUrlap.elements.namedItem("name").focus();
+}
+
+function szerkesztoBezara() {
+    szerkesztoUrlap.reset();
+    szerkesztoSzekcio.hidden = true;
+}
+
+megszakitasGomb.addEventListener("click", szerkesztoBezara);
+
+szerkesztoUrlap.addEventListener("submit", async (esemeny) => {
+    esemeny.preventDefault();
+    mentesGomb.disabled = true;
+    uzenetMegjelenitese("Felhasználó módosításainak mentése...", "info");
+
+    const urlapAdatok = Object.fromEntries(new FormData(szerkesztoUrlap).entries());
+    const felhasznaloId = urlapAdatok.id;
+    delete urlapAdatok.id;
+
+    try {
+        const valasz = await fetch(`${FELHASZNALOK}/${encodeURIComponent(felhasznaloId)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(urlapAdatok)
+        });
+
+        if (!valasz.ok) {
+            throw new Error(`A szerver ${valasz.status} hibát adott.`);
+        }
+
+        szerkesztoBezara();
+        await listaFrissitese();
+        uzenetMegjelenitese("A felhasználó adatai sikeresen módosítva.", "success");
+    } catch (hiba) {
+        uzenetMegjelenitese(`Nem sikerült módosítani a felhasználót: ${hiba.message}`, "danger");
+    } finally {
+        mentesGomb.disabled = false;
+    }
+});
  
 async function listaFrissitese() {
     try {
@@ -36,8 +98,8 @@ async function listaFrissitese() {
         felhasznalokTablaTorze.replaceChildren();
  
         if (felhasznalok.length === 0) {
-            uzenetMegjelenitese("Nincs megjeleníthető felhasználó.", "secondary");
-            return;
+            throw new Error('Nincs megjelenitendő felhasználó')
+            
         }
  
         felhasznalok.forEach(sorBeszurasa);

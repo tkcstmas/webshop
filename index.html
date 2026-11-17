@@ -41,6 +41,37 @@
             </form>
         </section>
 
+        <section id="edit-user-section" class="mb-4" aria-labelledby="edit-user-heading" hidden>
+            <h2 id="edit-user-heading" class="h4 mb-3">Felhasználó szerkesztése</h2>
+            <form id="edit-user-form" class="row g-3">
+                <input id="edit-user-id" name="id" type="hidden">
+                <div class="col-md-6">
+                    <label for="edit-user-name" class="form-label">Név</label>
+                    <input id="edit-user-name" name="name" class="form-control" type="text" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="edit-user-email" class="form-label">E-mail</label>
+                    <input id="edit-user-email" name="email" class="form-control" type="email" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="edit-user-city" class="form-label">Város</label>
+                    <input id="edit-user-city" name="city" class="form-control" type="text">
+                </div>
+                <div class="col-md-4">
+                    <label for="edit-user-phone" class="form-label">Telefonszám</label>
+                    <input id="edit-user-phone" name="phone" class="form-control" type="tel">
+                </div>
+                <div class="col-md-4">
+                    <label for="edit-user-role" class="form-label">Szerepkör</label>
+                    <input id="edit-user-role" name="role" class="form-control" type="text">
+                </div>
+                <div class="col-12">
+                    <button id="save-user-changes-button" class="btn btn-primary" type="submit">Módosítások mentése</button>
+                    <button id="cancel-edit-button" class="btn btn-outline-secondary" type="button">Mégse</button>
+                </div>
+            </form>
+        </section>
+
         <div id="users-status" class="alert alert-info" role="status" aria-live="polite">
             Felhasználók betöltése...
         </div>
@@ -54,6 +85,7 @@
                         <th scope="col">Város</th>
                         <th scope="col">Telefonszám</th>
                         <th scope="col">Szerepkör</th>
+                        <th scope="col">Műveletek</th>
                     </tr>
                 </thead>
                 <tbody id="users-table-body"></tbody>
